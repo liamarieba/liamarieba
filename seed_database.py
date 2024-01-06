@@ -10,7 +10,7 @@ import crud
 import model
 import server
 
-# Drop and create the database
+
 db.drop_all()
 db.create_all()
 
@@ -47,7 +47,7 @@ for club_index in range(10):
     club = Club(clubname=clubname, description=description, location=location)
     db.session.add(club)
 
-# Commit changes
+
 db.session.commit()
 
 # Sample data for meetings, next meeting date votes, book votes, book club books, and reviews
@@ -93,7 +93,7 @@ for club_index in range(10):
             review = Review(user_id=user_id, book_club_book_id=book_club_book_id, rating=rating, comments=comments)
             db.session.add(review)
 
-# Commit changes
+
 db.session.commit()
 
 

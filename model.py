@@ -1,10 +1,10 @@
 """Models for Book Club Tracker app."""
 
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import sqlalchemy
 
 db = SQLAlchemy()
 
-
+#L
 class User(db.Model):
     """A user."""
 

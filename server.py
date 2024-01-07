@@ -56,6 +56,23 @@ def process_login():
 
     return redirect("/")
 
+def search_books(query, api_key):
+    """Search for books using the Google Books API."""
+    base_url = "https://www.googleapis.com/books/v1/volumes"
+    params = {"q": query, "key": api_key}
+    response = requests.get(base_url, params=params)
+    return response.json()  
+
+@app.route('/book_search', methods=['GET', 'POST'])
+def book_search():
+    if request.method == 'POST':
+        query = request.form.get('query')
+        results = search_books(query, 'AIzaSyA_Mv9GFDf_BDAeTZjZm_h_rWAjzz0v3Tw') 
+        return render_template('search_results.html', results=results)
+    else:
+        return render_template('book_search.html')
+
+
 
 
 if __name__ == "__main__":

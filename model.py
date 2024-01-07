@@ -5,6 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+
+
+
 class User(db.Model):
     """A user."""
 
@@ -167,10 +170,16 @@ class Review(db.Model):
         return f"<Review review_id={self.review_id} user_id={self.user_id} book_club_book_id={self.book_club_book_id} rating={self.rating} comments={self.comments}>"
 
 
+def connect_to_db(app, db_uri='postgresql:///mylocaldb'):
+    """Connect the database to Flask app."""
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db.app = app
+    db.init_app(app)
 
 
-
-
+if __name__ == "__main__":
+    from server import app
 
 
 

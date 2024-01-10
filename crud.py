@@ -18,6 +18,8 @@ def get_user_by_id(user_id):
 
 
 
+
+
 def create_club(clubname, description, location):
     club = Club(clubname=clubname, description=description, location=location)
     db.session.add(club)

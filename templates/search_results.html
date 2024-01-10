@@ -3,21 +3,19 @@
 
 {% extends "base.html" %}
 
-{% block title %}Search Results{% endblock %}
-
 {% block content %}
     <h1>Search Results</h1>
     <ul>
-        {% for book in results.items %}
+        {% for book in results %}
             <li>
-                <h3>{{ book.volumeInfo.title }} by {{ book.volumeInfo.authors|join(', ') }}</h3>
-                <p>{{ book.volumeInfo.description }}</p>
+                {{ book.volumeInfo.title }} by {{ book.volumeInfo.authors | join(', ') }}
+                <p>{{ book.volumeInfo.get('description', 'Description not available.') }}</p>
                 <img src="{{ book.volumeInfo.imageLinks.thumbnail }}" alt="Book cover">
-                <!-- Implement buttons or links to nominate for vote or add to club -->
-                <!-- Example: -->
-                <!-- <button onclick="nominateForVote('{{ book.id }}')">Nominate for Vote</button> -->
-                <!-- <button onclick="addToClub('{{ book.id }}')">Add to Club</button> -->
+                <button onclick="nominateForVote('{{ book.id }}')">Nominate for Vote</button>
+                <button onclick="addToClub('{{ book.id }}')">Add to Club</button>
             </li>
+        {% else %}
+            <li>No results found</li>
         {% endfor %}
     </ul>
 {% endblock %}

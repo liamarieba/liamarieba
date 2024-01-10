@@ -3,6 +3,7 @@
 from flask import Flask, render_template, request, flash, session, redirect
 from model import connect_to_db, db
 import crud
+import requests
 
 from jinja2 import StrictUndefined
 
@@ -20,12 +21,13 @@ def homepage():
 
     return render_template('homepage.html')
 
-@app.route("/users", methods=["POST"])
+@app.route('/register', methods=['GET', 'POST'])
 def register_user():
     """Create a new user."""
+    if request.method == 'POST':
 
-    email = request.form.get("email")
-    password = request.form.get("password")
+        email = request.form.get("email")
+        password = request.form.get("password")
 
     user = crud.get_user_by_email(email)
     if user:
@@ -67,8 +69,8 @@ def search_books(query, api_key):
 def book_search():
     if request.method == 'POST':
         query = request.form.get('query')
-        results = search_books(query, 'AIzaSyA_Mv9GFDf_BDAeTZjZm_h_rWAjzz0v3Tw') 
-        return render_template('search_results.html', results=results)
+        results = search_books(query,'AIzaSyA_Mv9GFDf_BDAeTZjZm_h_rWAjzz0v3Tw') 
+        return render_template('search_results.html', results=results.get('items', []))
     else:
         return render_template('book_search.html')
 

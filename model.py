@@ -17,10 +17,13 @@ class User(db.Model):
     email = db.Column(db.String, unique=True)
     password = db.Column(db.String)
 
+    user_book_clubs = db.relationship("UserBookClub", back_populates="user")
+
     ratings = db.relationship("Rating", back_populates="user")
 
     def __repr__(self):
         return f"<User user_id={self.user_id} email={self.email}>"
+
     
 
 class UserBookClub(db.Model):
@@ -150,6 +153,23 @@ class Book(db.Model):
 
     def __repr__(self):
         return f"<Book book_id={self.book_id} title={self.title} author={self.author} genre={self.genre} published_date={self.published_date}>"
+    
+
+class Rating(db.Model):
+    """A user's rating for a book."""
+
+    __tablename__ = "ratings"
+
+    rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey("books.book_id"), nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+
+    user = db.relationship("User", back_populates="ratings")
+    book = db.relationship("Book", back_populates="ratings")
+
+    def __repr__(self):
+        return f"<Rating rating_id={self.rating_id} user_id={self.user_id} book_id={self.book_id} score={self.score}>"
 
 
 class Review(db.Model):

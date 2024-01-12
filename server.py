@@ -23,40 +23,91 @@ def homepage():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_user():
-    """Create a new user."""
-    if request.method == 'POST':
+    """Register a new user."""
+    email = None
 
+    if request.method == 'POST':
         email = request.form.get("email")
         password = request.form.get("password")
 
-    user = crud.get_user_by_email(email)
-    if user:
-        flash("Cannot create an account with that email. Try again.")
-    else:
-        user = crud.create_user(email, password)
-        db.session.add(user)
-        db.session.commit()
-        flash("Account created! Please log in.")
+        user = crud.get_user_by_email(email)
+        if user:
+            flash("Cannot create an account with that email. Try again.")
+        else:
+            user = crud.create_user(email, password)
+            db.session.add(user)
+            db.session.commit()
 
-    return redirect("/")
+        
+            session["user_email"] = email
+
+            flash("Account created and logged in!")
 
 
-@app.route("/login", methods=["POST"])
+    return render_template('register.html')
+
+
+@app.route("/login", methods=["GET", "POST"])
 def process_login():
     """Process user login."""
 
-    email = request.form.get("email")
-    password = request.form.get("password")
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-    user = crud.get_user_by_email(email)
-    if not user or user.password != password:
-        flash("The email or password you entered was incorrect.")
+        user = crud.get_user_by_email(email)
+        if not user or user.password != password:
+            flash("The email or password you entered was incorrect.")
+            return redirect("/login") 
+        else:
+            # Log in user by storing the user's email in session
+            session["user_email"] = user.email
+            flash(f"Welcome back, {user.email}!")
+
+            user_clubs = get_user_clubs(user.id) 
+
+            return redirect(url_for('show_clubs', user_id=user.id))
+
+    return render_template("login.html")
+
+@app.route('/show_clubs')
+def show_clubs():
+    user_id = request.args.get('user_id')
+    clubs = get_user_clubs(user_id)
+    return render_template('show_clubs.html', clubs=clubs)
+
+@app.route('/clubs')
+def clubs():
+    clubs = crud.get_all_clubs()
+    return render_template('clubs.html', clubs=clubs)
+
+@app.route('/book_club')
+def book_club_page():
+    """Render the book club page."""
+    return render_template('book_club.html')
+
+@app.route('/join/<int:club_id>')
+def join_club(club_id):
+    if 'user_email' not in session:
+        flash("You need to log in to join a club.")
+        return redirect('/login')
+
+    user_email = session['user_email']
+
+    user = crud.get_user_by_email(user_email)
+
+    club = crud.get_club_by_id(club_id)
+
+    if user in club.members:
+        flash("You are already a member of this club.")
     else:
-        # Log in user by storing the user's email in session
-        session["user_email"] = user.email
-        flash(f"Welcome back, {user.email}!")
+        # Add user to the club
+        club.members.append(user)
+        db.session.commit()
+        flash("You have successfully joined the club!")
 
-    return redirect("/")
+    return redirect('/show_clubs')
+
 
 def search_books(query, api_key):
     """Search for books using the Google Books API."""

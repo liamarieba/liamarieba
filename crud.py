@@ -1,7 +1,7 @@
 """CRUD operations."""
 
 
-from model import db, User, Club, Meeting, Book, Review
+from model import db, User, Club, Meeting, NextMeetingDateVote, BookVote, BookClubBook, Book, Rating, UserBookClub, Review
 
 
 def create_user(email, password):
@@ -16,8 +16,9 @@ def get_user_by_id(user_id):
     """Retrieve a user by user_id."""
     return User.query.get(user_id)
 
-
-
+def get_user_by_email(email):
+    """Return a user by email."""
+    return User.query.filter_by(email=email).first()
 
 
 def create_club(clubname, description, location):
@@ -26,6 +27,16 @@ def create_club(clubname, description, location):
     db.session.commit()
     return club
 
+def get_user_clubs(user_id):
+    """Return a list of clubs that the user is a member of."""
+    user = User.query.get(user_id)
+    if user:
+        return user.clubs
+    return []
+
+def get_all_clubs():
+    """Retrieve a list of all clubs."""
+    return Club.query.all()
 
 def create_meeting(club_id, book_id, meeting_date, voting_deadline):
     meeting = Meeting(club_id=club_id, book_id=book_id, meeting_date=meeting_date, voting_deadline=voting_deadline)
@@ -48,13 +59,6 @@ def delete_meeting(meeting_id):
     db.session.delete(meeting)
     db.session.commit()
 
-# Update meeting attributes (e.g., book_id, meeting_date, voting_deadline)
-def update_meeting(meeting_id, new_book_id, new_meeting_date, new_voting_deadline):
-    meeting = get_meeting_by_id(meeting_id)
-    meeting.book_id = new_book_id
-    meeting.meeting_date = new_meeting_date
-    meeting.voting_deadline = new_voting_deadline
-    db.session.commit()
 
 def get_meetings_by_club(club_id):
     return Meeting.query.filter_by(club_id=club_id).all()
@@ -83,8 +87,11 @@ def create_review(user_id, book_club_book_id, rating, comments):
     db.session.commit()
     return review
 
+def get_review_by_id(review_id):
+    """Retrieve a review by review_id."""
+    return Review.query.get(review_id)
 
-def get_reviews_by_book_club_book(book_club_book_id):
+def get_reviews_for_book_club_book(book_club_book_id):
     return Review.query.filter_by(book_club_book_id=book_club_book_id).all()
 
 #update reviews

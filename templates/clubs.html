@@ -1,0 +1,41 @@
+
+
+
+
+{% extends 'base.html' %}
+
+{% block title %}All Clubs{% endblock %}
+
+{% block content %}
+  <h1>All Clubs</h1>
+
+  <ul>
+    {% for club in clubs %}
+      <li>
+        <h2>{{ club.clubname }}</h2>
+        <p>{{ club.description }}</p>
+        <p>Location: {{ club.location }}</p>
+        <a href="/join/{{ club.club_id }}">Join Club</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

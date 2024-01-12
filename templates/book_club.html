@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Club Page{% endblock %}
+
+{% block content %}
+    <header>
+        <h1>Welcome to the Book Club</h1>
+        <!-- navigation links here -->
+    </header>
+
+    <section id="calendar">
+        <h2>Upcoming Meetings</h2>
+        <!-- calendar component here -->
+    </section>
+
+    <section id="book-list">
+        <h2>Books We've Read</h2>
+        <ul>
+            <!-- Display the list of books the club has read -->
+            <li>Book 1</li>
+            <li>Book 2</li>
+            <li>Book 3</li>
+            <!-- Repeat for each book -->
+        </ul>
+    </section>
+
+    <section id="book-voting">
+        <h2>Vote for the Next Book</h2>
+        <!-- Add a form for users to vote for the next book -->
+        <form action="/vote_book" method="post">
+            <label for="book-choice">Select a Book:</label>
+            <select id="book-choice" name="book-choice">
+                <option value="book1">Book 1</option>
+                <option value="book2">Book 2</option>
+                <option value="book3">Book 3</option>
+                <!-- Add options for available books -->
+            </select>
+            <input type="submit" value="Vote">
+        </form>
+    </section>
+
+    <section id="date-voting">
+        <h2>Vote for the Next Meeting Date</h2>
+        <!-- Add a form for users to vote for the next meeting date -->
+        <form action="/vote_date" method="post">
+            <label for="meeting-date">Select a Date:</label>
+            <input type="date" id="meeting-date" name="meeting-date">
+            <input type="submit" value="Vote">
+        </form>
+    </section>
+
+
+{% endblock %}
+
+
+

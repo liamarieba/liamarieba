@@ -1,0 +1,33 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Your Clubs{% endblock %}
+
+{% block content %}
+    <h1>Your Clubs</h1>
+    {% if clubs %}
+        <ul>
+            {% for club in clubs %}
+                <li>
+                    <strong>{{ club.name }}</strong> - {{ club.description }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You are not a member of any clubs yet.</p>
+    {% endif %}
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+

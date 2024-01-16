@@ -1,15 +1,15 @@
 """Server for Book Club Tracker app."""
 
-from flask import Flask, render_template, request, flash, session, redirect
-from model import connect_to_db, db
+from flask import Flask, render_template, request, flash, session, redirect, url_for
+from model import connect_to_db, db, User, UserBookClub
 import crud
 import requests
 
 from jinja2 import StrictUndefined
 
 app = Flask(__name__)
-app.secret_key = "dev"
-app.jinja_env.undefined = StrictUndefined
+app.secret_key = 'coolestbookclub123'
+connect_to_db(app)
 
 
 
@@ -24,8 +24,6 @@ def homepage():
 @app.route('/register', methods=['GET', 'POST'])
 def register_user():
     """Register a new user."""
-    email = None
-
     if request.method == 'POST':
         email = request.form.get("email")
         password = request.form.get("password")
@@ -34,15 +32,9 @@ def register_user():
         if user:
             flash("Cannot create an account with that email. Try again.")
         else:
-            user = crud.create_user(email, password)
-            db.session.add(user)
-            db.session.commit()
-
-        
-            session["user_email"] = email
-
-            flash("Account created and logged in!")
-
+            crud.create_user(email, password) 
+            flash("Account created! Please login.")
+            return redirect('/login')
 
     return render_template('register.html')
 
@@ -60,20 +52,25 @@ def process_login():
             flash("The email or password you entered was incorrect.")
             return redirect("/login") 
         else:
-            # Log in user by storing the user's email in session
             session["user_email"] = user.email
             flash(f"Welcome back, {user.email}!")
 
-            user_clubs = get_user_clubs(user.id) 
-
-            return redirect(url_for('show_clubs', user_id=user.id))
+            # Redirect to show_clubs page after successful login
+            return redirect(url_for('show_clubs', user_id=user.user_id))
 
     return render_template("login.html")
 
 @app.route('/show_clubs')
 def show_clubs():
-    user_id = request.args.get('user_id')
-    clubs = get_user_clubs(user_id)
+    if 'user_email' not in session:
+        return redirect(url_for('login'))
+
+    user_email = session['user_email']
+    user = crud.get_user_by_email(user_email)
+    if not user:
+        return redirect(url_for('login'))
+
+    clubs = get_user_clubs(user.user_id)
     return render_template('show_clubs.html', clubs=clubs)
 
 @app.route('/clubs')
@@ -108,6 +105,13 @@ def join_club(club_id):
 
     return redirect('/show_clubs')
 
+def get_user_clubs(user_id):
+    """Return a list of clubs that the user is a member of."""
+
+    user_book_clubs = UserBookClub.query.filter_by(user_id=user_id).all()
+    clubs = [ubc.club for ubc in user_book_clubs]
+    return clubs
+
 
 def search_books(query, api_key):
     """Search for books using the Google Books API."""
@@ -124,6 +128,39 @@ def book_search():
         return render_template('search_results.html', results=results.get('items', []))
     else:
         return render_template('book_search.html')
+    
+
+@app.route('/nominate_book', methods=['POST'])
+def nominate_book():
+    """Nominate a book for voting."""
+
+    if 'user_email' not in session:
+        flash("You need to log in to nominate a book.")
+        return redirect('/login')
+
+    user_email = session['user_email']
+    user = crud.get_user_by_email(user_email)
+
+    if not user:
+        flash("User not found. Please log in again.")
+        return redirect('/login')
+
+    book_id = request.form.get('book_id')
+    club_id = request.form.get('club_id')
+
+    existing_nomination = NominatedBook.query.filter_by(book_id=book_id, club_id=club_id).first()
+
+    if existing_nomination:
+        flash("This book has already been nominated for the club.")
+    else:
+        # Create a new nomination record
+        nominated_book = NominatedBook(book_id=book_id, club_id=club_id, user_id=user.user_id)
+        db.session.add(nominated_book)
+        db.session.commit()
+        flash("Book nominated successfully!")
+
+    # Redirect back to the search results page
+    return redirect(url_for('search_results'))
 
 
 

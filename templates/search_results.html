@@ -12,16 +12,19 @@
                 <p>{{ book.volumeInfo.get('description', 'Description not available.') }}</p>
                 <img src="{{ book.volumeInfo.imageLinks.thumbnail }}" alt="Book cover">
                 <button onclick="nominateForVote('{{ book.id }}')">Nominate for Vote</button>
-                <button onclick="addToClub('{{ book.id }}')">Add to Club</button>
             </li>
         {% else %}
             <li>No results found</li>
         {% endfor %}
     </ul>
+    
+    <script>
+        function nominateForVote(bookId) {
+            // add AJAX request here to nominate the book
+            alert("Book with ID " + bookId + " nominated for vote!");
+        }
+    </script>
 {% endblock %}
-
-
-
 
 
 

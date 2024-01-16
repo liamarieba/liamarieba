@@ -18,6 +18,9 @@ class User(db.Model):
     password = db.Column(db.String)
 
     user_book_clubs = db.relationship("UserBookClub", back_populates="user")
+    next_meeting_date_votes = db.relationship("NextMeetingDateVote", back_populates="user")
+    book_votes = db.relationship("BookVote", back_populates="user")
+    reviews = db.relationship("Review", back_populates="user")
 
     ratings = db.relationship("Rating", back_populates="user")
 
@@ -150,6 +153,7 @@ class Book(db.Model):
     book_club_books = db.relationship("BookClubBook", back_populates="book")
     meetings = db.relationship("Meeting", back_populates="book")
     book_votes = db.relationship("BookVote", back_populates="next_book")
+    ratings = db.relationship("Rating", back_populates="book")
 
     def __repr__(self):
         return f"<Book book_id={self.book_id} title={self.title} author={self.author} genre={self.genre} published_date={self.published_date}>"
@@ -190,12 +194,13 @@ class Review(db.Model):
         return f"<Review review_id={self.review_id} user_id={self.user_id} book_club_book_id={self.book_club_book_id} rating={self.rating} comments={self.comments}>"
 
 
-def connect_to_db(app, db_uri='postgresql:///mylocaldb'):
-    """Connect the database to Flask app."""
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.app = app
-    db.init_app(app)
+def connect_to_db(flask_app, db_uri="postgresql:///clubs", echo=True):
+    flask_app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
+    flask_app.config["SQLALCHEMY_ECHO"] = echo
+    flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    db.app = flask_app
+    db.init_app(flask_app)
 
 
 if __name__ == "__main__":

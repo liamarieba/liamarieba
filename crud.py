@@ -59,6 +59,8 @@ def delete_meeting(meeting_id):
     db.session.delete(meeting)
     db.session.commit()
 
+def get_club_by_id(club_id):
+    return Club.query.get(club_id)
 
 def get_meetings_by_club(club_id):
     return Meeting.query.filter_by(club_id=club_id).all()
@@ -100,9 +102,6 @@ def update_review(review_id, new_rating, new_comments):
     review.rating = new_rating
     review.comments = new_comments
     db.session.commit()
-
-
-
 
 
 if __name__ == '__main__':

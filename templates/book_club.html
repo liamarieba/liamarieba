@@ -5,35 +5,41 @@
 {% block content %}
     <header>
         <h1>Welcome to the Book Club</h1>
-        <!-- navigation links here -->
+        <!-- navigation links here eventually? -->
     </header>
 
     <section id="calendar">
         <h2>Upcoming Meetings</h2>
-        <!-- calendar component here -->
+        <ul>
+            {% for meeting in upcoming_meetings %}
+                <li>{{ meeting.meeting_date }} - Topic: {{ meeting.topic }}</li>
+            {% else %}
+                <li>No upcoming meetings.</li>
+            {% endfor %}
+        </ul>
     </section>
 
     <section id="book-list">
         <h2>Books We've Read</h2>
         <ul>
-            <!-- Display the list of books the club has read -->
-            <li>Book 1</li>
-            <li>Book 2</li>
-            <li>Book 3</li>
-            <!-- Repeat for each book -->
+            {% for book in books_read %}
+                <li>{{ book.title }} by {{ book.author }}</li>
+            {% else %}
+                <li>No books read yet.</li>
+            {% endfor %}
         </ul>
     </section>
 
     <section id="book-voting">
         <h2>Vote for the Next Book</h2>
-        <!-- Add a form for users to vote for the next book -->
         <form action="/vote_book" method="post">
             <label for="book-choice">Select a Book:</label>
             <select id="book-choice" name="book-choice">
-                <option value="book1">Book 1</option>
-                <option value="book2">Book 2</option>
-                <option value="book3">Book 3</option>
-                <!-- Add options for available books -->
+                {% for nominated_book in nominated_books %}
+                    <option value="{{ nominated_book.book.book_id }}">{{ nominated_book.book.title }} - Votes: {{ nominated_book.votes }}</option>
+                {% else %}
+                    <option>No books nominated yet.</option>
+                {% endfor %}          
             </select>
             <input type="submit" value="Vote">
         </form>
@@ -41,16 +47,16 @@
 
     <section id="date-voting">
         <h2>Vote for the Next Meeting Date</h2>
-        <!-- Add a form for users to vote for the next meeting date -->
         <form action="/vote_date" method="post">
             <label for="meeting-date">Select a Date:</label>
-            <input type="date" id="meeting-date" name="meeting-date">
+            <select id="meeting-date" name="meeting-date">
+                {% for meeting in meetings %}
+                    <option value="{{ meeting.meeting_id }}">{{ meeting.meeting_date }}</option>
+                {% else %}
+                    <option>No dates available for voting.</option>
+                {% endfor %}
+            </select>
             <input type="submit" value="Vote">
         </form>
     </section>
-
-
 {% endblock %}
-
-
-

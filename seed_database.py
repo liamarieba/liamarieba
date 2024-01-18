@@ -5,7 +5,7 @@ import json
 from random import choice, randint
 from datetime import datetime, timedelta
 from server import app
-from model import db, connect_to_db, User, Club, Book, UserBookClub, Meeting, NextMeetingDateVote, BookVote, BookClubBook, Review, Rating
+from model import db, connect_to_db, User, Club, Book, UserBookClub, Meeting, NextMeetingDateVote, BookVote, BookClubBook, Review, Rating, NominatedBook
 
 import crud
 import model
@@ -39,12 +39,13 @@ db.session.commit()
 
 # Sample data for books
 for book_index in range(10):
+    book_id = f"Book-ID-{book_index + 1}" 
     title = f"Book {book_index + 1}"
     author = f"Author {book_index + 1}"
     genre = f"Genre {book_index + 1}"
     published_date = datetime.utcnow() - timedelta(days=randint(1, 365)) 
 
-    book = Book(title=title, author=author, genre=genre, published_date=published_date)
+    book = Book(book_id=book_id, title=title, author=author, genre=genre, published_date=published_date)
     db.session.add(book)
 
 db.session.commit()
@@ -60,12 +61,24 @@ for user_index in range(10):
 
 db.session.commit()
 
+# Seed data for NominatedBook
+for club_id in range(1, 11):  
+    for _ in range(3):  # Nominating 3 books per club
+        user_id = randint(1, 10)  
+        book_id = f"Book-ID-{randint(1, 10)}" 
+        votes = randint(0, 10)  
+
+        nominated_book = NominatedBook(club_id=club_id, user_id=user_id, book_id=book_id, votes=votes)
+        db.session.add(nominated_book)
+
+db.session.commit()
+
 # Sample data for meetings and related
 for club_index in range(10):
     club_id = club_index + 1
 
     for _ in range(2):
-        book_id = randint(1, 10)
+        book_id = f"Book-ID-{randint(1, 10)}"
         meeting_date = datetime.utcnow() + timedelta(days=randint(1, 30))
         voting_deadline = meeting_date - timedelta(days=7)
 
@@ -80,12 +93,12 @@ for club_index in range(10):
 
         for _ in range(5):
             user_id = randint(1, 10)
-            next_book_id = randint(1, 10)
+            next_book_id = f"Book-ID-{randint(1, 10)}"
             book_vote = BookVote(meeting_id=meeting.meeting_id, user_id=user_id, next_book_id=next_book_id)
             db.session.add(book_vote)
 
         for _ in range(3):
-            book_id = randint(1, 10)
+            book_id = f"Book-ID-{randint(1, 10)}"
             book_club_book = BookClubBook(book_id=book_id, club_id=club_id, meeting_id=meeting.meeting_id, chosen_date=meeting_date)
             db.session.add(book_club_book)
 

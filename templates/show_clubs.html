@@ -10,7 +10,10 @@
         <ul>
             {% for club in clubs %}
                 <li>
-                    <strong>{{ club.name }}</strong> - {{ club.description }}
+                    <a href="{{ url_for('book_club_page', club_id=club.club_id) }}">
+                        <strong>{{ club.clubname }}</strong>
+                    </a> 
+                    - {{ club.description }}
                 </li>
             {% endfor %}
         </ul>
@@ -18,9 +21,6 @@
         <p>You are not a member of any clubs yet.</p>
     {% endif %}
 {% endblock %}
-
-
-
 
 
 

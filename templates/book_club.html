@@ -58,5 +58,17 @@
             </select>
             <input type="submit" value="Vote">
         </form>
+
     </section>
+
+    <section id="club-members">
+        <h2>Club Members</h2>
+        <ul>
+            {% for member in club_members %}
+                <li>{{ member.email }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+
 {% endblock %}

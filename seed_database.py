@@ -50,6 +50,8 @@ for book_index in range(10):
 
 db.session.commit()
 
+actual_book_ids = [book.book_id for book in Book.query.all()]
+
 # Sample data for user-book club associations
 for user_index in range(10):
     user = User.query.filter_by(email=f"user{user_index}@example.com").one()
@@ -65,7 +67,7 @@ db.session.commit()
 for club_id in range(1, 11):  
     for _ in range(3):  # Nominating 3 books per club
         user_id = randint(1, 10)  
-        book_id = f"Book-ID-{randint(1, 10)}" 
+        book_id = choice(actual_book_ids)
         votes = randint(0, 10)  
 
         nominated_book = NominatedBook(club_id=club_id, user_id=user_id, book_id=book_id, votes=votes)
@@ -78,7 +80,7 @@ for club_index in range(10):
     club_id = club_index + 1
 
     for _ in range(2):
-        book_id = f"Book-ID-{randint(1, 10)}"
+        book_id = choice(actual_book_ids)
         meeting_date = datetime.utcnow() + timedelta(days=randint(1, 30))
         voting_deadline = meeting_date - timedelta(days=7)
 
@@ -93,12 +95,12 @@ for club_index in range(10):
 
         for _ in range(5):
             user_id = randint(1, 10)
-            next_book_id = f"Book-ID-{randint(1, 10)}"
+            next_book_id = choice(actual_book_ids)
             book_vote = BookVote(meeting_id=meeting.meeting_id, user_id=user_id, next_book_id=next_book_id)
             db.session.add(book_vote)
 
         for _ in range(3):
-            book_id = f"Book-ID-{randint(1, 10)}"
+            book_id = choice(actual_book_ids)
             book_club_book = BookClubBook(book_id=book_id, club_id=club_id, meeting_id=meeting.meeting_id, chosen_date=meeting_date)
             db.session.add(book_club_book)
 

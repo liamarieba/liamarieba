@@ -103,6 +103,12 @@ def update_review(review_id, new_rating, new_comments):
     review.comments = new_comments
     db.session.commit()
 
+def nominate_book_for_voting(club_id, user_id, book_id):
+    nominated_book = NominatedBook(club_id=club_id, user_id=user_id, book_id=book_id, votes=0)
+    db.session.add(nominated_book)
+    db.session.commit()
+    return nominated_book 
+
 
 if __name__ == '__main__':
     from server import app

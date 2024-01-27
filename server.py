@@ -39,6 +39,14 @@ def register_user():
 
     return render_template('register.html')
 
+def get_user_club(email):
+    user = crud.get_user_by_email(email)
+
+    if user and user.clubs:
+        return user.clubs[0]
+    else:
+        return None
+
 
 @app.route("/login", methods=["GET", "POST"])
 def process_login():
@@ -53,14 +61,25 @@ def process_login():
             return redirect(url_for('process_login')) 
         else:
             session["user_email"] = user.email
+
+            user_club = get_user_club(email)
+
+            if user_club:
+                session["club_id"] = user_club.club_id 
+                
+            if not user_club:
+                flash(f"Welcome back, {user.email}! You are not a member of any club. Please join a club to participate.")
+                return redirect(url_for('user_profile', user_id=user.user_id))
+
+
             flash(f"Welcome back, {user.email}!")
-            return redirect(url_for('show_clubs', user_id=user.user_id))
+            return redirect(url_for('user_profile', user_id=user.user_id))
 
     return render_template("login.html")
 
 
-@app.route('/show_clubs')
-def show_clubs():
+@app.route('/user_profile')
+def user_profile():
     if 'user_email' not in session:
         return redirect(url_for('process_login'))
 
@@ -70,7 +89,7 @@ def show_clubs():
         return redirect(url_for('process_login'))
 
     clubs = get_user_clubs(user.user_id)
-    return render_template('show_clubs.html', clubs=clubs)
+    return render_template('user_profile.html', clubs=clubs) 
 
 
 
@@ -94,9 +113,10 @@ def book_club_page(club_id):
     books_read = fetch_books_read_by_club(club_id)  
 
     nominated_books = club.nominated_books  
-    meetings = club.meetings  
+    meetings = club.meetings
+    club_members = club.members
 
-    return render_template('book_club.html', club=club, upcoming_meetings=upcoming_meetings, books_read=books_read, nominated_books=nominated_books, meetings=meetings)
+    return render_template('book_club.html', club=club, upcoming_meetings=upcoming_meetings, club_members=club_members, books_read=books_read, nominated_books=nominated_books, meetings=meetings)
 
 @app.route('/join/<int:club_id>')
 def join_club(club_id):
@@ -105,24 +125,31 @@ def join_club(club_id):
         return redirect(url_for('process_login'))
 
     user_email = session['user_email']
-
     user = crud.get_user_by_email(user_email)
+
+    if not user:
+        flash("User not found.")
+        return redirect(url_for('user_profile'))
+
+    # Check if the user is already a member of any club
+    existing_clubs = get_user_clubs(user.user_id)
+    if existing_clubs:
+        flash("You are already a member of a club and cannot join another.")
+        return redirect(url_for('user_profile'))
 
     club = crud.get_club_by_id(club_id)
 
-    if not user or not club:
-        flash("User or Club not found.")
+    if not club:
+        flash("Club not found.")
         return redirect(url_for('show_clubs'))
 
-    if user in club.members:
-        flash("You are already a member of this club.")
-    else:
-        # Add user to the club
-        club.members.append(user)
-        db.session.commit()
-        flash("You have successfully joined the club!")
+    # Add user to the club
+    club.members.append(user)
+    db.session.commit()
+    flash("You have successfully joined the club!")
 
-    return redirect(url_for('show_clubs'))
+    return redirect(url_for('user_profile'))
+
 
 def search_books(query, api_key):
     """Search for books using the Google Books API."""
@@ -131,11 +158,6 @@ def search_books(query, api_key):
     response = requests.get(base_url, params=params)
     return response.json()  
 
-def nominate_book_for_voting(club_id, user_id, book_id):
-    nominated_book = NominatedBook(club_id=club_id, user_id=user_id, book_id=book_id)
-    db.session.add(nominated_book)
-    db.session.commit()
-    return nominated_book
 
 def get_user_clubs(user_id):
     """Return a list of clubs that the user is a member of."""
@@ -168,31 +190,33 @@ def nominate_book():
     """Nominate a book for voting."""
 
     if 'user_email' not in session:
-        flash("You need to log in to nominate a book.")
-        return redirect (url_for('process_login'))
+        return jsonify({'message': 'You need to log in to nominate a book.'})
 
     user_email = session['user_email']
     user = crud.get_user_by_email(user_email)
 
     if not user:
-        flash("User not found. Please log in again.")
-        return redirect (url_for('process_login'))
+        return jsonify({'message': 'User not found. Please log in again.'})
 
-    book_id = request.form.get('book_id')
-    club_id = request.form.get('club_id')
+    user_club = user.clubs[0] if user.clubs else None 
 
-    existing_nomination = NominatedBook.query.filter_by(book_id=book_id, club_id=club_id).first()
+    if not user_club:
+        return jsonify({'message': 'You are not a member of any club.'})
+
+    data = request.get_json()
+    book_id = data.get('book_id')
+
+    existing_nomination = NominatedBook.query.filter_by(book_id=book_id, club_id=user_club.club_id).first()
 
     if existing_nomination:
-        flash("This book has already been nominated for the club.")
+        return jsonify({'message': 'This book has already been nominated for the club.'})
+
+    nominated_book = crud.nominate_book_for_voting(user_club.club_id, user.user_id, book_id)
+
+    if nominated_book:
+        return jsonify({'message': 'Book nominated successfully'})
     else:
-        # Create a new nomination record
-        nominated_book = NominatedBook(book_id=book_id, club_id=club_id, user_id=user.user_id)
-        db.session.add(nominated_book)
-        db.session.commit()
-
-
-    return jsonify({'message': 'Book nominated successfully'})
+        return jsonify({'message': 'An error occurred during the nomination process.'})
 
 
 @app.route('/vote_book', methods=['POST'])
@@ -259,7 +283,6 @@ def vote_for_next_date():
         flash("User not authenticated.")
     
     return redirect('/book_club_page')
-
 
 
 

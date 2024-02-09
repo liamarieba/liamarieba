@@ -1,35 +1,29 @@
 
 
-
-function nominateForVote(button) {
-    const bookId = button.getAttribute("data-book-id");
-
-    fetch('/nominate_book', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+$(".nominate-button").click(function() {
+    var bookId = $(this).data("book-id");
+    var title = $(this).data("title");
+    var author = $(this).data("author");
+    var clubId = "{{ session['club_id'] }}"; 
+    
+    $.ajax({
+        type: "POST",
+        url: "/nominate_book",
+        data: JSON.stringify({ 
+            book_id: bookId, 
+            club_id: clubId,
+            title: title,
+            author: author
+        }),
+        contentType: "application/json;charset=UTF-8",
+        success: function() {
+            alert("This book has been nominated.");
         },
-        body: JSON.stringify({ book_id: bookId, club_id: clubId }), 
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message === 'Book nominated successfully') {
-            alert(`Book with ID ${bookId} nominated for vote!`);
-        } else {
-            alert('Failed to nominate the book.');
+        error: function() {
+            alert("Error nominating the book.");
         }
-    })
-    .catch(error => {
-        console.error('Error nominating the book:', error);
-        alert('An error occurred while nominating the book.');
     });
-}
-
-
-
-
-
-
+});
 
 
 

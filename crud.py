@@ -1,7 +1,7 @@
 """CRUD operations."""
 
 
-from model import db, User, Club, Meeting, NextMeetingDateVote, BookVote, BookClubBook, Book, Rating, UserBookClub, Review
+from model import db, User, Club, Meeting, NextMeetingDateVote, BookVote, BookClubBook, Book, Rating, UserBookClub, Review, NominatedBook
 
 
 def create_user(email, password):
@@ -65,8 +65,8 @@ def get_club_by_id(club_id):
 def get_meetings_by_club(club_id):
     return Meeting.query.filter_by(club_id=club_id).all()
 
-def create_book(title, author, genre, published_date):
-    book = Book(title=title, author=author, genre=genre, published_date=published_date)
+def create_book(title, author):
+    book = Book(title=title, author=author)
     db.session.add(book)
     db.session.commit()
     return book
@@ -103,11 +103,32 @@ def update_review(review_id, new_rating, new_comments):
     review.comments = new_comments
     db.session.commit()
 
-def nominate_book_for_voting(club_id, user_id, book_id):
+def nominate_book_for_voting(club_id, user_id, book_id, book_details):
+    book = get_book_by_id(book_id)
+    if not book:
+        book = create_book(
+            title=book_details['title'],
+            author=book_details['author'],
+        )
+
+    existing_nomination = NominatedBook.query.filter_by(book_id=book_id, club_id=club_id).first()
+    if existing_nomination:
+
+        return None 
+
     nominated_book = NominatedBook(club_id=club_id, user_id=user_id, book_id=book_id, votes=0)
     db.session.add(nominated_book)
-    db.session.commit()
-    return nominated_book 
+    try:
+        db.session.commit()
+        return nominated_book
+    except Exception as e:
+        db.session.rollback()
+
+def get_nominated_books_by_club(club_id):
+    """Return a list of nominated books for a specific club."""
+    nominated_books = NominatedBook.query.filter_by(club_id=club_id).all()
+    return nominated_books
+
 
 
 if __name__ == '__main__':

@@ -9,7 +9,10 @@
                 {{ book.volumeInfo.title }} by {{ book.volumeInfo.authors | join(', ') }}
                 <p>{{ book.volumeInfo.get('description', 'Description not available.') }}</p>
                 <img src="{{ book.volumeInfo.imageLinks.thumbnail }}" alt="Book cover">
-                <button data-book-id="{{ book.id }}" class="nominate-button">Nominate for Vote</button>
+                <button data-book-id="{{ book.id }}" 
+                        data-title="{{ book.volumeInfo.title | escape }}" 
+                        data-author="{{ book.volumeInfo.authors | join(', ') | escape }}" 
+                        class="nominate-button">Nominate for Vote</button>
             </li>
         {% else %}
             <li>No results found</li>

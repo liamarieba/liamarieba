@@ -36,7 +36,9 @@
             <label for="book-choice">Select a Book:</label>
             <select id="book-choice" name="book-choice">
                 {% for nominated_book in nominated_books %}
-                    <option value="{{ nominated_book.book.book_id }}">{{ nominated_book.book.title }} - Votes: {{ nominated_book.votes }}</option>
+                    <option value="{{ nominated_book.book.book_id }}">
+                        {{ nominated_book.book.title }} - Votes: {{ nominated_book.votes }}
+                    </option>
                 {% else %}
                     <option>No books nominated yet.</option>
                 {% endfor %}          
@@ -46,6 +48,13 @@
     </section>
 
     <section id="date-voting">
+            <h2>Propose a New Meeting Date</h2>
+            <form action="/propose_date" method="post">
+                <label for="proposed-date">Select a Date:</label>
+                <input type="date" id="proposed-date" name="proposed-date">
+                <input type="submit" value="Propose Date">
+            </form>
+        </section>
         <h2>Vote for the Next Meeting Date</h2>
         <form action="/vote_date" method="post">
             <label for="meeting-date">Select a Date:</label>

@@ -6,10 +6,7 @@ from random import choice, randint
 from datetime import datetime, timedelta
 from server import app
 from model import db, connect_to_db, User, Club, Book, UserBookClub, Meeting, NextMeetingDateVote, BookVote, BookClubBook, Review, Rating, NominatedBook
-
-import crud
-import model
-import server
+import random
 
 connect_to_db(app)
 
@@ -17,6 +14,7 @@ db.drop_all()
 db.create_all()
 
 # Sample data for clubs
+clubs = []
 for club_index in range(10):
     clubname = f"Club {club_index + 1}"
     description = f"Description for Club {club_index + 1}"
@@ -24,99 +22,89 @@ for club_index in range(10):
 
     club = Club(clubname=clubname, description=description, location=location)
     db.session.add(club)
+    clubs.append(club)
 
 db.session.commit()
 
 # Sample data for users
+users = []
 for user_index in range(10):
     email = f"user{user_index}@example.com"
     password = "password"
 
     user = User(email=email, password=password)
     db.session.add(user)
+    users.append(user)
 
 db.session.commit()
 
 # Sample data for books
+books = []
 for book_index in range(10):
-    book_id = f"Book-ID-{book_index + 1}" 
+    book_id = f"Book-ID-{book_index + 1}"
     title = f"Book {book_index + 1}"
     author = f"Author {book_index + 1}"
-    genre = f"Genre {book_index + 1}"
-    published_date = datetime.utcnow() - timedelta(days=randint(1, 365)) 
 
-    book = Book(book_id=book_id, title=title, author=author, genre=genre, published_date=published_date)
+    book = Book(book_id=book_id, title=title, author=author)
     db.session.add(book)
+    books.append(book)
 
 db.session.commit()
 
-actual_book_ids = [book.book_id for book in Book.query.all()]
-
-# Sample data for user-book club associations
-for user_index in range(10):
-    user = User.query.filter_by(email=f"user{user_index}@example.com").one()
-    
+# Create UserBookClub associations
+for user in users:
     for _ in range(5):
-        club_id = randint(1, 10)
-        user_book_club = UserBookClub(user_id=user.user_id, club_id=club_id)
+        club = choice(clubs)
+        user_book_club = UserBookClub(user=user, club=club)
         db.session.add(user_book_club)
 
 db.session.commit()
 
 # Seed data for NominatedBook
-for club_id in range(1, 11):  
+for club in clubs:
     for _ in range(3):  # Nominating 3 books per club
-        user_id = randint(1, 10)  
-        book_id = choice(actual_book_ids)
-        votes = randint(0, 10)  
+        user = choice(users)
+        book = choice(books)
+        votes = randint(0, 10)
 
-        nominated_book = NominatedBook(club_id=club_id, user_id=user_id, book_id=book_id, votes=votes)
+        nominated_book = NominatedBook(club=club, user=user, book=book, votes=votes)
         db.session.add(nominated_book)
 
 db.session.commit()
 
-# Sample data for meetings and related
-for club_index in range(10):
-    club_id = club_index + 1
-
-    for _ in range(2):
-        book_id = choice(actual_book_ids)
-        meeting_date = datetime.utcnow() + timedelta(days=randint(1, 30))
-        voting_deadline = meeting_date - timedelta(days=7)
-
-        meeting = Meeting(club_id=club_id, book_id=book_id, meeting_date=meeting_date, voting_deadline=voting_deadline)
-        db.session.add(meeting)
-        db.session.flush()
-
-        for _ in range(5):
-            user_id = randint(1, 10)
-            next_meeting_date_vote = NextMeetingDateVote(meeting_id=meeting.meeting_id, user_id=user_id, next_meeting_date=meeting_date)
-            db.session.add(next_meeting_date_vote)
-
-        for _ in range(5):
-            user_id = randint(1, 10)
-            next_book_id = choice(actual_book_ids)
-            book_vote = BookVote(meeting_id=meeting.meeting_id, user_id=user_id, next_book_id=next_book_id)
-            db.session.add(book_vote)
-
-        for _ in range(3):
-            book_id = choice(actual_book_ids)
-            book_club_book = BookClubBook(book_id=book_id, club_id=club_id, meeting_id=meeting.meeting_id, chosen_date=meeting_date)
-            db.session.add(book_club_book)
+# Insert BookClubBook entries
+book_club_books = []
+for club in clubs:
+    selected_books = random.sample(books, 5)  # Assuming each club has 5 books
+    for book in selected_books:
+        book_club_book = BookClubBook(club=club, book=book)
+        db.session.add(book_club_book)
+        book_club_books.append(book_club_book)
 
 db.session.commit()
 
+# Sample data for meetings and related processes
+for club in clubs:
+    for _ in range(2):  # Assuming 2 meetings per club for simplicity
+        meeting_date = datetime.utcnow() + timedelta(days=randint(1, 60))
+        meeting = Meeting(club=club, meeting_date=meeting_date)
+        db.session.add(meeting)
+
+        # Assuming voting for the next meeting date as an example process
+        next_meeting_date = meeting_date + timedelta(days=randint(30, 90))
+        for user in random.sample(users, 5):  # Random 5 users vote for the next meeting date
+            vote = NextMeetingDateVote(meeting=meeting, user=user, next_meeting_date=next_meeting_date)
+            db.session.add(vote)
+db.session.commit()
+
 # Sample data for reviews
-for _ in range(30): # Assuming 30 book club books
-    user_id = randint(1, 10)
-    book_club_book_id = randint(1, 30)
-    rating = randint(1, 5)
-    comments = f"Random comment for book club book {book_club_book_id}"
+for book_club_book in book_club_books:
+    for _ in range(3):  # Assuming each book_club_book gets 3 reviews
+        user = choice(users)
+        rating = randint(1, 5)
+        comments = f"Random comment for book_club_book {book_club_book.book_club_book_id}"
 
-    review = Review
-
-
-    review = Review(user_id=user_id, book_club_book_id=book_club_book_id, rating=rating, comments=comments)
-    db.session.add(review)
+        review = Review(user=user, book_club_book=book_club_book, rating=rating, comments=comments)
+        db.session.add(review)
 
 db.session.commit()

@@ -104,36 +104,28 @@ class Meeting(db.Model):
 
     meeting_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     club_id = db.Column(db.Integer, db.ForeignKey("clubs.club_id"), nullable=False)
-    book_id = db.Column(db.String, db.ForeignKey('books.book_id'), nullable=False)
     meeting_date = db.Column(db.Date)
-    voting_deadline = db.Column(db.Date)
 
     club = db.relationship("Club", back_populates="meetings")
-    book = db.relationship("Book", back_populates="meetings")
     next_meeting_date_votes = db.relationship("NextMeetingDateVote", back_populates="meeting")
-    book_votes = db.relationship("BookVote", back_populates="meeting")
-    book_club_books = db.relationship("BookClubBook", back_populates="meeting")
 
     def __repr__(self):
-        return f"<Meeting meeting_id={self.meeting_id} club_id={self.club_id} book_id={self.book_id} meeting_date={self.meeting_date} voting_deadline={self.voting_deadline}>"
+        return f"<Meeting meeting_id={self.meeting_id} club_id={self.club_id} meeting_date={self.meeting_date}>"
 
 
 class NextMeetingDateVote(db.Model):
-    """Votes for the next meeting date."""
-
     __tablename__ = "next_meeting_date_votes"
 
     next_meeting_date_vote_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     meeting_id = db.Column(db.Integer, db.ForeignKey("meetings.meeting_id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
-    next_meeting_date = db.Column(db.Date)
+    next_meeting_date = db.Column(db.DateTime, nullable=False)
 
     meeting = db.relationship("Meeting", back_populates="next_meeting_date_votes")
     user = db.relationship("User", back_populates="next_meeting_date_votes")
 
     def __repr__(self):
-        return f"<NextMeetingDateVote next_meeting_date_vote_id={self.next_meeting_date_vote_id} meeting_id={self.meeting_id} user_id={self.user_id} next_meeting_date={self.next_meeting_date}>"
-
+        return f"<NextMeetingDateVote next_meeting_date_vote_id={self.next_meeting_date_vote_id} meeting_id={self.meeting_id} user_id={self.user_id}>"
 
 class BookVote(db.Model):
     """Votes for the next book."""
@@ -141,11 +133,9 @@ class BookVote(db.Model):
     __tablename__ = "book_votes"
 
     book_vote_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    meeting_id = db.Column(db.Integer, db.ForeignKey("meetings.meeting_id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     next_book_id = db.Column(db.String, db.ForeignKey('books.book_id'), nullable=False)
 
-    meeting = db.relationship("Meeting", back_populates="book_votes")
     user = db.relationship("User", back_populates="book_votes")
     next_book = db.relationship("Book", back_populates="book_votes")
 
@@ -161,12 +151,10 @@ class BookClubBook(db.Model):
     book_club_book_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     book_id = db.Column(db.String, db.ForeignKey("books.book_id"), nullable=False)
     club_id = db.Column(db.Integer, db.ForeignKey("clubs.club_id"), nullable=False)
-    meeting_id = db.Column(db.Integer, db.ForeignKey("meetings.meeting_id"), nullable=False)
     chosen_date = db.Column(db.Date)
 
     book = db.relationship("Book", back_populates="book_club_books")
     club = db.relationship("Club", back_populates="book_club_books")
-    meeting = db.relationship("Meeting", back_populates="book_club_books")
     reviews = db.relationship("Review", back_populates="book_club_book")
 
     def __repr__(self):
@@ -181,17 +169,14 @@ class Book(db.Model):
     book_id = db.Column(db.String, primary_key=True)
     title = db.Column(db.String, nullable=False)
     author = db.Column(db.String)
-    genre = db.Column(db.String)
-    published_date = db.Column(db.Date)
 
     book_club_books = db.relationship("BookClubBook", back_populates="book")
-    meetings = db.relationship("Meeting", back_populates="book")
     book_votes = db.relationship("BookVote", back_populates="next_book")
     ratings = db.relationship("Rating", back_populates="book")
     clubs = db.relationship('Club', secondary='book_club_books', back_populates='books_read')
 
     def __repr__(self):
-        return f"<Book book_id={self.book_id} title={self.title} author={self.author} genre={self.genre} published_date={self.published_date}>"
+        return f"<Book book_id={self.book_id} title={self.title} author={self.author}>"
     
 
 class Rating(db.Model):

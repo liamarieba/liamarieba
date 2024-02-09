@@ -1,9 +1,9 @@
 """Server for Book Club Tracker app."""
 
-from flask import Flask, render_template, request, flash, session, redirect, url_for
+from flask import Flask, render_template, request, flash, session, redirect, url_for, jsonify
 from model import connect_to_db, db, User, UserBookClub, Book, BookVote, Meeting, NextMeetingDateVote, Club, BookClubBook, NominatedBook
 from datetime import datetime
-import crud
+import crud 
 import requests
 
 from jinja2 import StrictUndefined
@@ -109,14 +109,15 @@ def book_club_page(club_id):
         flash("Club not found.")
         return redirect(url_for('show_clubs'))
 
+    current_club_id = session.get('club_id')
     upcoming_meetings = fetch_upcoming_meetings(club_id)  
     books_read = fetch_books_read_by_club(club_id)  
 
-    nominated_books = club.nominated_books  
+    nominated_books = crud.get_nominated_books_by_club(club_id)
     meetings = club.meetings
     club_members = club.members
 
-    return render_template('book_club.html', club=club, upcoming_meetings=upcoming_meetings, club_members=club_members, books_read=books_read, nominated_books=nominated_books, meetings=meetings)
+    return render_template('book_club.html', club=club, upcoming_meetings=upcoming_meetings, club_members=club_members, books_read=books_read, nominated_books=nominated_books, meetings=meetings, current_club_id=current_club_id)
 
 @app.route('/join/<int:club_id>')
 def join_club(club_id):
@@ -180,7 +181,13 @@ def book_search():
     if request.method == 'POST':
         query = request.form.get('query')
         results = search_books(query,'AIzaSyA_Mv9GFDf_BDAeTZjZm_h_rWAjzz0v3Tw') 
-        return render_template('search_results.html', results=results.get('items', []))
+        books = results.get('items', [])
+
+        for book in books:
+            if not book.get("volumeInfo", {}).get("imageLinks", {}).get("thumbnail"):
+               book["volumeInfo"]["imageLinks"] = {"thumbnail": "URL_to_default_image_or_None"}
+ 
+        return render_template('search_results.html', results=books)
     else:
         return render_template('book_search.html')
     
@@ -198,20 +205,25 @@ def nominate_book():
     if not user:
         return jsonify({'message': 'User not found. Please log in again.'})
 
-    user_club = user.clubs[0] if user.clubs else None 
-
-    if not user_club:
-        return jsonify({'message': 'You are not a member of any club.'})
-
     data = request.get_json()
     book_id = data.get('book_id')
+    client_club_id = data.get('club_id')
+    book_details = {
+        'title': data.get('title'),
+        'author': data.get('author'),
+    }
+
+    user_club = next((club for club in user.clubs if club.club_id == client_club_id), None)
+
+    if not user_club:
+        return jsonify({'message': 'You are not a member of the specified club.'})
 
     existing_nomination = NominatedBook.query.filter_by(book_id=book_id, club_id=user_club.club_id).first()
 
     if existing_nomination:
         return jsonify({'message': 'This book has already been nominated for the club.'})
 
-    nominated_book = crud.nominate_book_for_voting(user_club.club_id, user.user_id, book_id)
+    nominated_book = crud.nominate_book_for_voting(user_club.club_id, user.user_id, book_id, book_details)
 
     if nominated_book:
         return jsonify({'message': 'Book nominated successfully'})
@@ -250,39 +262,74 @@ def vote_for_next_book():
     else:
         flash("User not authenticated.")
     
-    return redirect('/book_club_page')
+    nominated_books = crud.get_all_nominated_books()
+
+    return render_template('book_club.html', nominated_books=nominated_books)
 
 @app.route('/vote_date', methods=['POST'])
 def vote_for_next_date():
-    selected_date = request.form.get('meeting-date')
+    meeting_id = request.form.get('meeting_id')
     
     user_email = session.get('user_email')
+    if not user_email:
+        flash("You must log in to vote.")
+        return redirect('/login')
     
-    if user_email:
-        user = User.query.filter_by(email=user_email).first()
-        
-        if user:
-            meeting = Meeting.query.filter_by(voting_deadline=selected_date).first()
-            
-            if meeting:
-                existing_vote = NextMeetingDateVote.query.filter_by(user_id=user.user_id, meeting_id=meeting.meeting_id).first()
-                
-                if existing_vote:
-                    flash("You have already voted for a meeting date.")
-                else:
-                    new_vote = NextMeetingDateVote(user_id=user.user_id, meeting_id=meeting.meeting_id, next_meeting_date=selected_date)
-                    db.session.add(new_vote)
-                    db.session.commit()
-                    
-                    flash("Your vote for the meeting date has been recorded.")
-            else:
-                flash("Invalid meeting date selection.")
-        else:
-            flash("User not found.")
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        flash("User not found.")
+        return redirect('/login')
+    
+    meeting = Meeting.query.get(meeting_id)
+    if not meeting:
+        flash("Meeting not found.")
+        return redirect('/homepage')
+
+    existing_vote = NextMeetingDateVote.query.filter_by(user_id=user.user_id, meeting_id=meeting.meeting_id).first()
+    if existing_vote:
+        flash("You have already voted for a meeting date.")
     else:
-        flash("User not authenticated.")
+        new_vote = NextMeetingDateVote(user_id=user.user_id, meeting_id=meeting.meeting_id)
+        db.session.add(new_vote)
+        db.session.commit()
+        flash("Your vote for the meeting date has been recorded.")
+
     
-    return redirect('/book_club_page')
+    return redirect(url_for('book_club_page', club_id=club_id))
+
+
+@app.route('/propose_date', methods=['POST'])
+def propose_date():
+    proposed_date_str = request.form.get('proposed-date')
+    user_email = session.get('user_email')
+    
+    if not user_email:
+        flash("You must log in to propose a date.")
+        return redirect(url_for('login'))
+    
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        flash("User not found.")
+        return redirect(url_for('login'))
+
+    proposed_date = datetime.strptime(proposed_date_str, '%Y-%m-%d').date()
+    
+    club_id = session.get('club_id')
+    existing_meeting = Meeting.query.filter(Meeting.meeting_date==proposed_date, Meeting.club_id==club_id).first()
+    if existing_meeting:
+        flash("This date has already been proposed for this club.")
+        return redirect(url_for('book_club_page', club_id=club_id))
+    
+    new_meeting = Meeting(club_id=club_id, meeting_date=proposed_date)
+    db.session.add(new_meeting)
+    db.session.commit()
+    
+    flash("Your proposed date has been added.")
+    return redirect(url_for('book_club_page', club_id=club_id))
+
+
+
+ 
 
 
 

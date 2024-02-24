@@ -1,41 +1,28 @@
-
-
-
-
 {% extends 'base.html' %}
 
 {% block title %}All Clubs{% endblock %}
 
 {% block content %}
-  <h1>All Clubs</h1>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 class="text-center">All Clubs</h1>
 
-  <ul>
-    {% for club in clubs %}
-      <li>
-        <h2>{{ club.clubname }}</h2>
-        <p>{{ club.description }}</p>
-        <p>Location: {{ club.location }}</p>
-        <a href="/join/{{ club.club_id }}">Join Club</a>
-      </li>
-    {% endfor %}
-  </ul>
+                <div class="row">
+                    {% for club in clubs %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h2>{{ club.clubname }}</h2>
+                                    <p>{{ club.description }}</p>
+                                    <p>Location: {{ club.location }}</p>
+                                    <a href="/join/{{ club.club_id }}" class="btn btn-primary">Join Club</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,6 +5,7 @@
 {% block title %}Create an Account{% endblock %}
 
 {% block content %}
+<div class="start-here">
     <h2>Create an Account</h2>
     <form action="/register" method="post">
 
@@ -14,9 +15,9 @@
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br>
 
-        <input type="submit" value="Create an Account">
+        <input type="submit" value="Create an Account" class="btn btn-register">
     </form>
-
+</div>
 {% endblock %}
 
 

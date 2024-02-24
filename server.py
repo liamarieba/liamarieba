@@ -283,8 +283,9 @@ def vote_for_next_date():
     meeting = Meeting.query.get(meeting_id)
     if not meeting:
         flash("Meeting not found.")
-        return redirect('/homepage')
+        return redirect(url_for('book_club_page'))
 
+    club_id = session.get('club_id')
     existing_vote = NextMeetingDateVote.query.filter_by(user_id=user.user_id, meeting_id=meeting.meeting_id).first()
     if existing_vote:
         flash("You have already voted for a meeting date.")
@@ -329,6 +330,25 @@ def propose_date():
 
 
 
+@app.route('/create_club', methods=['GET', 'POST'])
+def create_club():
+    if request.method == 'POST':
+        clubname = request.form['clubname']
+        description = request.form['description']
+        location = request.form['location']
+        
+        new_club = Club(clubname=clubname, description=description, location=location)
+
+        db.session.add(new_club)
+        db.session.commit()
+        
+        return redirect(url_for('clubs'))
+    else:
+        return render_template('create_club.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
  
 
 
@@ -336,4 +356,3 @@ def propose_date():
 if __name__ == "__main__":
     connect_to_db(app)
     app.run(host="0.0.0.0", debug=True)
-

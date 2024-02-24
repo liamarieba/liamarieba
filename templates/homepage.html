@@ -5,14 +5,14 @@
 {% block title %}Book Club Tracker{% endblock %}
 
 {% block content %}
-  <h1>Welcome!</h1>
+  <div class="start-here">
+    <h1 class="main-heading">Start Here</h1>
 
-  <h2>Navigation</h2>
-  <ul>
-    <li><a href="/clubs">View all clubs</a></li>
-    <li><a href="/register">Create an account</a></li>
-    <li><a href="/login">Login</a></li>
-  </ul>
+    <ul>
+      <li><a href="/register" class="btn btn-register">Create an account</a></li>
+      <li><a href="/login" class="btn btn-login">Login</a></li>
+    </ul>
+  </div>
 {% endblock %}
 
 

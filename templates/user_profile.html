@@ -1,36 +1,41 @@
 
 
+
+
 {% extends "base.html" %}
 
 {% block title %}Your Profile{% endblock %}
 
 {% block content %}
-    <h1>Your Clubs</h1>
-    {% if clubs %}
-        <ul>
-            {% for club in clubs %}
-                <li>
-                    <a href="{{ url_for('book_club_page', club_id=club.club_id) }}">
-                        <strong>{{ club.clubname }}</strong>
-                    </a> 
-                    - {{ club.description }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>You are not a member of any clubs yet.</p>
-        <p>
-            <a href="{{ url_for('clubs') }}">Join a Club</a>
-        </p>
-    {% endif %}
+    <div class="container">
+        <div class="row mt-4">
+            <div class="col-md-4">
+                
+                <div class="text-left">
+                    <a href="{{ url_for('create_club') }}" class="btn btn-primary mb-2">Create a Club</a>
+                </div>
+                <div class="text-left">
+                    <a href="{{ url_for('clubs') }}" class="btn btn-secondary">Join a Club</a>
+                </div>
+            </div>
+            <div class="col-md-8">
+                
+                <h1 class="text-center mb-4">Your Clubs</h1>
+                {% if clubs %}
+                    <ul>
+                        {% for club in clubs %}
+                            <li>
+                                <a href="{{ url_for('book_club_page', club_id=club.club_id) }}">
+                                    <strong>{{ club.clubname }}</strong>
+                                </a> 
+                                - {{ club.description }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>You are not a member of any clubs yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,133 @@
+body {
+  background-color: #D2CABF; 
+}
+
+/* Header and Title */
+
+.background-image {
+  background-image: url('/static/Book\ Club\ Tracker.jpg');
+  background-size: cover; 
+  background-position: center; 
+  height: 50px;
+  color: #D2CABF; 
+  padding: 100px 0; 
+}
+
+.background-image h1 {
+  display: none;
+}
+
+/* Navigation Bar Styles */
+nav {
+  background-color: #7A8699; 
+  overflow: hidden; 
+}
+
+nav ul {
+  list-style-type: none; 
+  margin: 0;
+  padding: 0;
+}
+
+nav ul li {
+  float: right; 
+}
+
+nav ul li a {
+  display: block; 
+  color: #FFFFF0; 
+  text-align: center; 
+  padding: 14px 20px; 
+  text-decoration: none; 
+}
+
+nav ul li a:hover {
+  background-color: #8693A0; 
+  color: 1A5F9A; 
+}
+
+/* Start Here */
+
+.start-here {
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+min-height: 40vh; 
+text-align: center;
+}
+
+.start-here ul {
+list-style: none;
+padding: 0;
+}
+
+.start-here li {
+display: inline-block;
+margin-right: 20px;
+}
+
+.start-here li:last-child {
+margin-right: 0;
+}
+
+.start-here form label {
+margin-bottom: 10px; 
+}
+
+.start-here form input[type="email"],
+.start-here form input[type="password"],
+.start-here form input[type="submit"] {
+margin-bottom: 20px; 
+}
+
+/* body, input, button {
+font-family: 'Proxima Nova', sans-serif; 
+color: #854B50; 
+}
+
+input[type="submit"] {
+background-color: #854B50; 
+color: #8693A0;
+padding: 10px 20px;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+input[type="submit"]:hover {
+background-color: #413838;
+} */
+
+.main-heading {
+margin-bottom: 20px; 
+}
+
+.btn {
+display: inline-block;
+padding: 10px 20px;
+background-color: #7A8699;
+color: #fff;
+text-decoration: none;
+border-radius: 5px;
+transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+background-color: #5C85A9;
+}
+
+.btn-register {
+background-color: #7A8699;
+}
+
+.btn-login {
+background-color: #7A8699;
+}
+
+.upcoming-meetings li {
+  text-align: center;
+  display: block; 
+  list-style-type: none; 
+
+

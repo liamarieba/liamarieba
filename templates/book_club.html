@@ -3,81 +3,93 @@
 {% block title %}Book Club Page{% endblock %}
 
 {% block content %}
-    <header>
-        <h1>Welcome to the Book Club</h1>
-        <!-- navigation links here eventually? -->
-    </header>
+<div class="start-here">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <header style="color: #D13704; text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5); font-size: 70px; font-family: Helvetica, sans-serif;">
+                    <h1>Welcome to the Book Club</h1>
+                </header>
+            </div>
+        </div>
 
-    <section id="calendar">
-        <h2>Upcoming Meetings</h2>
-        <ul>
-            {% for meeting in upcoming_meetings %}
-                <li>{{ meeting.meeting_date }} - Topic: {{ meeting.topic }}</li>
-            {% else %}
-                <li>No upcoming meetings.</li>
-            {% endfor %}
-        </ul>
-    </section>
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <section id="calendar" class="mb-4">
+                    <h2 style="font-size: 30px;">Upcoming Meetings</h2>
+                    <ul class="list-unstyled upcoming-meetings">
+                        {% for meeting in upcoming_meetings %}
+                            <li>{{ meeting.meeting_date }} - Topic: {{ meeting.topic }}</li>
+                        {% else %}
+                            <li>No upcoming meetings.</li>
+                        {% endfor %}
+                    </ul>
+                </section>
 
-    <section id="book-list">
-        <h2>Books We've Read</h2>
-        <ul>
-            {% for book in books_read %}
-                <li>{{ book.title }} by {{ book.author }}</li>
-            {% else %}
-                <li>No books read yet.</li>
-            {% endfor %}
-        </ul>
-    </section>
+                <section id="book-list" class="mb-4">
+                    <h2>Books We've Read</h2>
+                    <ul>
+                        {% for book in books_read %}
+                            <li>{{ book.title }} by {{ book.author }}</li>
+                        {% else %}
+                            <li>No books read yet.</li>
+                        {% endfor %}
+                    </ul>
+                </section>
 
-    <section id="book-voting">
-        <h2>Vote for the Next Book</h2>
-        <form action="/vote_book" method="post">
-            <label for="book-choice">Select a Book:</label>
-            <select id="book-choice" name="book-choice">
-                {% for nominated_book in nominated_books %}
-                    <option value="{{ nominated_book.book.book_id }}">
-                        {{ nominated_book.book.title }} - Votes: {{ nominated_book.votes }}
-                    </option>
-                {% else %}
-                    <option>No books nominated yet.</option>
-                {% endfor %}          
-            </select>
-            <input type="submit" value="Vote">
-        </form>
-    </section>
+                <section id="book-voting" class="mb-4">
+                    <h2 style="font-size: 30px;">Vote for the Next Book</h2>
+                    <form action="/vote_book" method="post">
+                        <label for="book-choice">Select a Book:</label>
+                        <select id="book-choice" name="book-choice">
+                            {% for nominated_book in nominated_books %}
+                                <option value="{{ nominated_book.book.book_id }}">
+                                    {{ nominated_book.book.title }} - Votes: {{ nominated_book.votes }}
+                                </option>
+                            {% else %}
+                                <option>No books nominated yet.</option>
+                            {% endfor %}          
+                        </select>
+                        <input type="submit" value="Vote" class="btn btn-register">
+                    </form>
+                </section>
+            </div>
 
-    <section id="date-voting">
-            <h2>Propose a New Meeting Date</h2>
-            <form action="/propose_date" method="post">
-                <label for="proposed-date">Select a Date:</label>
-                <input type="date" id="proposed-date" name="proposed-date">
-                <input type="submit" value="Propose Date">
-            </form>
-        </section>
-        <h2>Vote for the Next Meeting Date</h2>
-        <form action="/vote_date" method="post">
-            <label for="meeting-date">Select a Date:</label>
-            <select id="meeting-date" name="meeting-date">
-                {% for meeting in meetings %}
-                    <option value="{{ meeting.meeting_id }}">{{ meeting.meeting_date }}</option>
-                {% else %}
-                    <option>No dates available for voting.</option>
-                {% endfor %}
-            </select>
-            <input type="submit" value="Vote">
-        </form>
+            <div class="col-md-4">
+                <section id="date-voting" class="mb-4">
+                    <h2 style="font-size: 30px;">Propose a Meeting Date</h2>
+                    <form action="/propose_date" method="post">
+                        <label for="proposed-date">Select a Date:</label>
+                        <input type="date" id="proposed-date" name="proposed-date">
+                        <input type="submit" value="Propose Date" class="btn btn-register">
+                    </form>
+                </section>
 
-    </section>
+                <section id="meeting-date-voting" class="mb-4">
+                    <h2 style="font-size: 30px;">Next Meeting Date Vote</h2>
+                    <form action="/vote_date" method="post">
+                        <label for="meeting-date">Select a Date:</label>
+                        <select id="meeting-date" name="meeting_id">
+                            {% for meeting in meetings %}
+                                <option value="{{ meeting.meeting_id }}">{{ meeting.meeting_date }}</option>
+                            {% else %}
+                                <option>No dates available for voting.</option>
+                            {% endfor %}
+                        </select>
+                        <input type="submit" value="Vote" class="btn btn-register">
+                    </form>
+                </section>
 
-    <section id="club-members">
-        <h2>Club Members</h2>
-        <ul>
-            {% for member in club_members %}
-                <li>{{ member.email }}</li>
-            {% endfor %}
-        </ul>
-    </section>
-
-
+                <section id="club-members" class="mb-4">
+                    <h2 style="font-size: 30px;">Club Members</h2>
+                    <ul>
+                        {% for member in club_members %}
+                            <li>{{ member.email }}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

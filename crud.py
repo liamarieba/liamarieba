@@ -134,8 +134,3 @@ def get_nominated_books_by_club(club_id):
 if __name__ == '__main__':
     from server import app
     connect_to_db(app)
-
-
-
-
-
